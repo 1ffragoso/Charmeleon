@@ -1,0 +1,59 @@
+Proposta de Projeto Final: Design e Implementação de um Compilador para uma
+Linguagem de Programação Própria
+Objetivo: Cada grupo deverá idealizar, projetar e implementar uma nova linguagem de
+programação, e em seguida, construir um compilador completo para essa linguagem. O
+compilador deve ser capaz de traduzir programas escritos na linguagem criada para um
+formato executável (e.g., bytecode, assembly, ou código C/C++ para posterior
+compilação).
+Requisitos:
+Idealização e Design da Linguagem:
+Sintaxe e Semântica: Definir formalmente a sintaxe (usando BNF/EBNF) e a semântica
+da linguagem. A linguagem deve ser minimamente expressiva, incluindo tipos de dados,
+estruturas de controle (condicionais, laços), funções e, opcionalmente, recursos mais
+avançados como classes, módulos ou tratamento de exceções.
+Justificativa: Apresentar a motivação para a criação da linguagem, seus objetivos, o
+domínio de aplicação pretendido e os problemas que ela visa resolver ou as ideias que ela
+explora.
+Implementação do Compilador:
+• Análise Léxica: Construir um analisador léxico que tokenize o código-fonte da
+linguagem.
+• Análise Sintática: Desenvolver um analisador sintático (parser) que construa uma
+Árvore de Sintaxe Abstrata (AST) a partir dos tokens.
+• Análise Semântica: Implementar a análise semântica para verificar a correção do
+programa (e.g., verificação de tipos, declaração de variáveis, escopo) e construir
+uma tabela de símbolos.
+• Geração de Código Intermediário (IR): Gerar uma representação intermediária
+(IR) a partir da AST. A escolha da IR (e.g., Three-Address Code, SSA) deve ser
+justificada.
+• Otimização de Código (Opcional, mas altamente recomendado): Implementar
+pelo menos uma otimização de código na IR (e.g., eliminação de código morto,
+propagação de constantes, otimização de laços).
+• Geração de Código Alvo: Gerar código executável para uma plataforma alvo. As
+opções incluem:
+• Assembly: Gerar código assembly para uma arquitetura específica (e.g., x86-64,
+ARM).
+• Bytecode: Gerar bytecode para uma máquina virtual existente (e.g., JVM, CLR,
+ou uma máquina virtual simples projetada pelo grupo).
+• Transpilação: Gerar código em uma linguagem de alto nível (e.g., C, C++,
+Python) que possa ser compilado ou interpretado posteriormente.
+• Testes: Desenvolver um conjunto abrangente de programas de teste na linguagem
+criada para demonstrar a funcionalidade do compilador e a correção da linguagem.
+• Documentação: Elaborar uma documentação completa que inclua:
+• •Especificação da Linguagem: Manual da linguagem com sua sintaxe, semântica
+e exemplos de uso.
+• Design do Compilador: Detalhes da arquitetura do compilador, decisões de design
+para cada fase, escolha da IR e justificativas.
+• Relatório Técnico: Descrição dos desafios enfrentados, soluções adotadas, e
+análise de desempenho/complexidade.
+Diferenciais e Desafios:
+• Criatividade no Design da Linguagem: A liberdade de criar a própria linguagem
+permite explorar conceitos inovadores e resolver problemas de forma única.
+• Compreensão Holística: Este projeto exige uma compreensão profunda de todas
+as fases do processo de compilação, desde o design da linguagem até a geração de
+código executável.
+• Habilidades de Engenharia de Software: O trabalho em grupo, o controle de
+versão, a escrita de testes e a documentação são cruciais para o sucesso do projeto,
+simulando um ambiente de desenvolvimento de software real.
+• Otimização e Desempenho: A inclusão de otimizações adiciona uma camada de
+complexidade e permite explorar como o design do compilador afeta o
+desempenho do código gerado.
