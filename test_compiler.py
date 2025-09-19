@@ -5,6 +5,8 @@ import os
 class TestCompilerEndToEnd(unittest.TestCase):
 
     def _run_compiler(self, source_code):
+        import os
+        import subprocess 
         # Escreve o código fonte em um arquivo temporário
         temp_file_path = "temp_test_code.charmeleon"
         with open(temp_file_path, "w") as f:
@@ -12,10 +14,10 @@ class TestCompilerEndToEnd(unittest.TestCase):
 
         # Executa o compilador como um subprocesso
         result = subprocess.run(
-            ["python3.11", "main.py", temp_file_path], # Agora chama main.py
+            ["python", "main.py", temp_file_path], # Agora chama main.py
             capture_output=True,
             text=True,
-            cwd="/home/ubuntu/charmeleon_compiler"
+            cwd="C:/Charmeleon"
         )
 
         # Remove o arquivo temporário

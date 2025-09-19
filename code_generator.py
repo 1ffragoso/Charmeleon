@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict
 
 
 class IRInstr:
@@ -74,6 +74,8 @@ class CodeGenerator:
     def gen(self) -> str:
         self.parse()
         i = 0
+        in_global = False
+
         while i < len(self.instrs):
             instr = self.instrs[i]
             if instr.kind == "FUNC":
@@ -83,7 +85,23 @@ class CodeGenerator:
                 self.indent_level -= 1
                 self.emit("")
             else:
+                # Se encontrar instrução fora de função, abre __global_main__ uma vez
+                if not in_global:
+                    self.emit("def __global_main__():")
+                    self.indent_level += 1
+                    in_global = True
+                self._emit_single(i)
                 i += 1
+
+        if in_global:
+            # fecha __global_main__ e adiciona chamada
+            self.indent_level -= 1
+            self.emit("")
+            self.emit("if __name__ == '__main__':")
+            self.indent_level += 1
+            self.emit("__global_main__()")
+            self.indent_level -= 1
+
         return "\n".join(self.python_lines)
 
     def _gen_function_body(self, start_idx: int) -> int:
@@ -96,11 +114,9 @@ class CodeGenerator:
                 i += 1
                 continue
 
-            # Evitar emitir a BIN_OP de condição imediatamente antes do IF_FALSE
             if instr.kind == "BIN_OP" and i + 1 < len(self.instrs):
                 nxt = self.instrs[i + 1]
                 if nxt.kind == "IF_FALSE" and nxt.cond == instr.target:
-                    # Deixe o IF_FALSE lidar com a emissão de controle
                     i = self._gen_if_or_loop(i + 1)
                     continue
 
@@ -112,15 +128,13 @@ class CodeGenerator:
                 i = self._gen_if_or_loop(i)
                 continue
             if instr.kind == "ASSIGN":
-                # Handle string literals with escaped quotes correctly
                 value = instr.value
                 if value.startswith('"') and value.endswith('"'):
-                    value = value.replace('\"', '"') # Replace escaped double quotes with actual double quotes
+                    value = value.replace('\"', '"')
                 self.emit(f"{instr.target} = {value}")
                 i += 1
                 continue
             if instr.kind == "BIN_OP":
-                # Dobra BIN_OP + ASSIGN imediato em uma única atribuição
                 folded = False
                 if i + 1 < len(self.instrs):
                     nxt = self.instrs[i + 1]
@@ -140,7 +154,6 @@ class CodeGenerator:
                 tgt = instr.label
                 tgt_idx = self.labels.get(tgt)
                 if tgt_idx is not None and tgt_idx < i:
-                    # backward goto: já deve ter sido transformado em while; ignore
                     pass
                 else:
                     self.emit(f"# goto {tgt}")
@@ -159,14 +172,12 @@ class CodeGenerator:
         else_label = if_instr.label
         else_label_idx = self.labels.get(else_label, None)
 
-        # Extrai expressão condicional
         cond_expr = if_instr.cond
         prev_instr = self.instrs[if_idx - 1] if if_idx - 1 >= 0 else None
         if prev_instr and prev_instr.kind == "BIN_OP" and prev_instr.target == if_instr.cond:
             cond_expr = f"{prev_instr.left} {prev_instr.op} {prev_instr.right}"
             self.consumed.add(if_idx - 1)
 
-        # Encontra fim do bloco verdadeiro
         true_block_end_idx = if_idx + 1
         while true_block_end_idx < len(self.instrs):
             current_instr = self.instrs[true_block_end_idx]
@@ -176,7 +187,6 @@ class CodeGenerator:
                 break
             true_block_end_idx += 1
 
-        # Loop: GOTO para label anterior
         if true_block_end_idx < len(self.instrs) and self.instrs[true_block_end_idx].kind == "GOTO":
             goto_instr = self.instrs[true_block_end_idx]
             target_label = goto_instr.label
@@ -191,13 +201,11 @@ class CodeGenerator:
                         self.consumed.add(k)
                     k += 1
                 self.indent_level -= 1
-                # pular para depois do else_label
                 if else_label_idx is not None:
                     return else_label_idx + 1
                 else:
                     return true_block_end_idx + 1
 
-        # If/Else estruturado
         self.emit(f"if {cond_expr}:")
         self.indent_level += 1
         k = if_idx + 1
@@ -222,7 +230,6 @@ class CodeGenerator:
                     l += 1
                 self.indent_level -= 1
                 return skip_label_idx + 1
-        # If simples
         if else_label_idx is not None:
             return else_label_idx + 1
         return true_block_end_idx + 1
@@ -235,7 +242,6 @@ class CodeGenerator:
                 value = value.replace('\"', '"')
             self.emit(f"{ins.target} = {value}")
         elif ins.kind == "BIN_OP":
-            # Dobra se próximo for ASSIGN consumindo o temporário
             if idx + 1 < len(self.instrs):
                 nxt = self.instrs[idx + 1]
                 if nxt.kind == "ASSIGN" and nxt.value == ins.target:
@@ -257,19 +263,12 @@ class CodeGenerator:
 
 if __name__ == "__main__":
     ir_code_example = [
-        "FUNC main:",
         "ASSIGN x, 3",
-        "L1:",
-        "BIN_OP t1, x, >, 0",
-        "IF_FALSE t1 GOTO L2",
         "PRINT x",
-        "BIN_OP t2, x, -, 1",
-        "ASSIGN x, t2",
-        "GOTO L1",
-        "L2:",
+        "FUNC main:",
+        "ASSIGN y, 10",
+        "PRINT y",
         "END_FUNC main",
     ]
     gen = CodeGenerator(ir_code_example)
     print(gen.gen())
-
-

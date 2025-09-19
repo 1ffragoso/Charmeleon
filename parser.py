@@ -6,7 +6,7 @@ class ASTNode:
         self.metadata = metadata if metadata is not None else {}
 
     def __repr__(self):
-        return f"ASTNode(type=\\\\\\\\\'{self.type}\\\\\\, value={self.value!r}, children={self.children}, metadata={self.metadata})"
+        return f"ASTNode(type=\'{self.type}\' value={self.value!r} children={self.children} metadata={self.metadata})"
 
 class Parser:
     def __init__(self, tokens):
@@ -34,7 +34,8 @@ class Parser:
             if self.current_token["type"] == "KEYWORD" and self.current_token["value"] == "func":
                 nodes.append(self.function_declaration())
             else:
-                raise Exception(f"Declaração inesperada: {self.current_token}")
+                # Agora permite instruções no topo do programa
+                nodes.append(self.statement())
         return ASTNode("Program", children=nodes)
 
     def function_declaration(self):
@@ -125,8 +126,7 @@ class Parser:
         if self.current_token and self.current_token["type"] == "KEYWORD" and self.current_token["value"] == "else":
             self.eat("KEYWORD", "else")
             if self.current_token and self.current_token["type"] == "KEYWORD" and self.current_token["value"] == "if":
-                # Handle else if as a nested if statement
-                false_block = self.if_statement()
+                false_block = self.if_statement() # else if
             else:
                 self.eat("DELIMITER", "{")
                 false_block = self.block()
@@ -136,17 +136,22 @@ class Parser:
     def for_statement(self):
         self.eat("KEYWORD", "for")
         self.eat("DELIMITER", "(")
+        # For init: can be a var declaration or an assignment, but without trailing semicolon
         init = None
         if self.current_token and self.current_token["type"] == "KEYWORD" and self.current_token["value"] == "var":
             init = self._variable_declaration_no_semicolon()
         elif self.current_token and self.current_token["type"] == "IDENTIFIER":
             init = self._assignment_statement_no_semicolon()
         self.eat("DELIMITER", ";")
+
         condition = self.expression()
         self.eat("DELIMITER", ";")
+
+        # For update: can be an assignment, but without trailing semicolon
         update = None
         if self.current_token and self.current_token["type"] == "IDENTIFIER":
             update = self._assignment_statement_no_semicolon()
+        
         self.eat("DELIMITER", ")")
         self.eat("DELIMITER", "{")
         body = self.block()
@@ -161,7 +166,7 @@ class Parser:
         if self.current_token and self.current_token["value"] == ":":
             self.eat("DELIMITER", ":")
             var_type = self.current_token["value"]
-            self.eat("KEYWORD")
+            self.eat("KEYWORD") # int, float, bool, string
         self.eat("ASSIGN", "=")
         expression = self.expression()
         return ASTNode("VariableDeclaration", value=name, children=[expression], metadata={"type": var_type})
@@ -247,3 +252,46 @@ class Parser:
             raise Exception(f"Fator inesperado: {token}")
 
 
+if __name__ == "__main__":
+    from lexer import Lexer
+
+    code = """
+func main() {
+    var x = 10;
+    if (x > 5) {
+        print("Hello");
+    }
+    for (var i = 0; i < 10; i = i + 1) {
+        print(i);
+    }
+    while (x > 0) {
+        x = x - 1;
+    }
+}
+func somar(a: int, b: int) -> int {
+    return a + b;
+}
+"""
+    lexer = Lexer(code)
+    tokens = lexer.tokenize()
+    print("Tokens:", tokens)
+
+    parser = Parser(tokens)
+    ast = parser.parse()
+    print("AST:", ast)
+
+    # You can add a simple AST pretty printer here to visualize the tree
+    def print_ast(node, indent=0):
+        if node is None: # Handle None nodes
+            return
+        print("  " * indent + f"- {node.type}", end="")
+        if node.value is not None:
+            print(f" ({node.value})", end="")
+        if hasattr(node, "metadata") and node.metadata:
+            print(f" {node.metadata}", end="")
+        print()
+        for child in node.children:
+            print_ast(child, indent + 1)
+
+    print("\nPretty Printed AST:")
+    print_ast(ast)
