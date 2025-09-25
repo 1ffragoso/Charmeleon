@@ -7,14 +7,14 @@ class Lexer:
         self.position = 0
 
         self.token_specs = [
-            ("SKIP",        r"\s+|//.*|/\*.*?\*/"),  # Whitespace and comments
-            ("KEYWORD",     r"\b(func|if|else|for|while|var|int|float|bool|string|true|false|return|print)\b"),
-            ("IDENTIFIER",  r"[a-zA-Z_][a-zA-Z0-9_]*"),
-            ("NUMBER",      r"\d+(\.\d*)?"),
-            ("STRING",      r"\"(?:[^\\\"]|\\.)*\"|\'(?:[^\\\"]|\\.)*\'"), # Updated to handle escaped quotes and single quotes
-            ("ASSIGN",      r"="),
-            ("OPERATOR",    r"\+\+|--|==|!=|<=|>=|&&|\|\||->|[+\-*/%<>]"), # Added -> back
-            ("DELIMITER",   r"[(){},;:]"),
+            ("SKIP",        r"\s+|//.*|/\*.*?\*/"),  # Espaços em branco e comentários
+            ("KEYWORD",     r"\b(func|if|else|for|while|var|int|float|bool|string|true|false|return|print)\b"),  # Palavras-chave
+            ("IDENTIFIER",  r"[a-zA-Z_][a-zA-Z0-9_]*"),  # Identificadores
+            ("NUMBER",      r"\d+(\.\d*)?"),  # Números (inteiros ou decimais)
+            ("STRING",      r"\"(?:[^\\\"]|\\.)*\"|\'(?:[^\\\"]|\\.)*\'"),  # Atualizado para lidar com aspas escapadas e aspas simples
+            ("OPERATOR",    r"\+\+|--|==|!=|<=|>=|&&|\|\||->|[+\-*/%<>]"),  # Incluído operador ->
+            ("ASSIGN",      r"="),  # Atribuição
+            ("DELIMITER",   r"[(){},;:]"),  # Delimitadores
         ]
 
     def tokenize(self):
@@ -47,7 +47,6 @@ func main() {
     tokens = lexer.tokenize()
     for token in tokens:
         print(token)
-
 
 
 
