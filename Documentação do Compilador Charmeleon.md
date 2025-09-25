@@ -10,9 +10,6 @@ O objetivo principal deste compilador é fornecer uma base sólida para o desenv
 
 Este documento servirá como um guia abrangente para desenvolvedores, pesquisadores e entusiastas que desejam entender o funcionamento interno do compilador Charmeleon, suas capacidades e como ele pode ser utilizado para construir aplicações web eficientes e seguras.
 
-**Autor:** Manus AI
-**Data:** 21 de agosto de 2025
-
 
 
 
