@@ -3,7 +3,7 @@ class Optimizer:
     def __init__(self, ir_code):
         self.ir_code = ir_code
     def _parse(self, instr):
-        # Returns (def_var, use_vars, kind)
+        # Retorna (def_var, use_vars, kind)
         instr = instr.strip()
         if not instr:
             return (None, [], "empty")
@@ -33,7 +33,7 @@ class Optimizer:
             target = m.group(1).strip()
             value = m.group(2).strip()
             uses = []
-            # consider temps and identifiers as uses (simple heuristic)
+            # considerar temporários e identificadores como usos (heurística simples)
             tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*|t\d+", value)
             for tok in tokens:
                 if re.match(r"^t\d+$", tok) or re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", tok):
@@ -55,25 +55,23 @@ class Optimizer:
             d, uses, kind = self._parse(instr)
             keep = False
             if kind in {"label", "func", "end", "if", "goto", "print", "return", "other"}:
-                # keep labels, control flow, side-effects and unknowns
+                # manter rótulos, fluxo de controle, efeitos colaterais e instruções desconhecidas
                 keep = True
             else:
-                # assign or binop
-                # be conservative: keep if defines a non-temp (program variable)
+                # atribuição ou operação binária
+                # ser conservador: manter se define uma variável não temporária (variável do programa)
                 if d is not None and not re.match(r"^t\d+$", d):
                     keep = True
-                # keep if its result is used later
+                # manter se seu resultado é usado posteriormente
                 elif d is not None and d in used:
                     keep = True
             if keep:
-                # update liveness
+                # atualizar variáveis vivas
                 if d in used:
                     used.remove(d)
                 for u in uses:
-                    # consider only names that look like temps or identifiers
+                    # considerar apenas nomes que parecem temporários ou identificadores
                     if re.match(r"^t\d+$", u) or re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", u):
                         used.add(u)
                 out.insert(0, instr)
         return out
-
-
