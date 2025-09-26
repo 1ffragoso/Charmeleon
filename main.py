@@ -55,7 +55,7 @@ if __name__ == "__main__":
         with open(input_file, "r", encoding="utf-8") as f:
             charmeleon_code = f.read()
     except FileNotFoundError:
-        print(f"Erro: Arquivo \'{input_file}\' não encontrado.", file=sys.stderr)
+        print(f"Erro: Arquivo '{input_file}' não encontrado.", file=sys.stderr)
         sys.exit(1)
 
     sast_report, generated_python_code = compile_charmeleon(charmeleon_code)
@@ -71,8 +71,15 @@ if __name__ == "__main__":
     output_file = input_file.replace(".charmeleon", ".py")
     if not output_file.endswith(".py"):
         output_file += ".py"
+
+    # Se houver instruções globais, encapsula em uma função main automaticamente
+    if not generated_python_code.strip().startswith("def "):
+        wrapped_code = "def __global_main__():\n"
+        for line in generated_python_code.splitlines():
+            wrapped_code += "    " + line + "\n"
+        wrapped_code += "\nif __name__ == '__main__':\n    __global_main__()\n"
+        generated_python_code = wrapped_code
+
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(generated_python_code)
     print(f"\nCódigo Python salvo em: {output_file}", file=sys.stderr)
-
-
